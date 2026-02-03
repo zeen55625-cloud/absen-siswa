@@ -3,159 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presensi Gerbang Sekolah</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Scanner Presensi siswa </title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
+            --primary: #2563eb;
+            --success: #22c55e;
+            --bg: #0f172a;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg);
+            color: white;
+            margin: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
         }
 
-        .container {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            max-width: 400px;
-            width: 100%;
+        .header {
+            padding: 20px;
             text-align: center;
         }
 
-        h2 { color: var(--primary-color); margin-bottom: 0.5rem; }
-        p { font-size: 0.9rem; color: #64748b; margin-bottom: 1.5rem; }
-
-        .input-group {
-            text-align: left;
-            margin-bottom: 1rem;
-        }
-
-        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
-
-        input {
+        #reader {
             width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.8rem;
-            box-sizing: border-box;
-            transition: 0.3s;
-            font-family: inherit;
+            max-width: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            background: black;
         }
 
-        input:focus {
-            outline: none;
-            border-color: var(--primary-color);
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 460px;
+            display: none; /* Muncul setelah scan */
+            border-left: 5px solid var(--success);
+            animation: slideUp 0.3s ease-out;
         }
 
-        button {
-            width: 100%;
-            background: var(--primary-color);
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .result-card h3 { color: var(--success); margin-top: 0; }
+        .data-row { margin: 8px 0; font-size: 0.9rem; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+        .label { color: #94a3b8; font-weight: bold; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--success);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        #start-btn {
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 1rem;
-            border-radius: 0.8rem;
-            font-weight: 600;
+            padding: 12px 25px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: 0.3s;
-            margin-top: 1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
-
-        button:hover { background: #1d4ed8; }
-
-        #qrcode-container {
-            margin-top: 2rem;
-            display: none;
-            padding: 1rem;
-            background: #f1f5f9;
-            border-radius: 1rem;
-        }
-
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1rem;
-        }
-
-        .info-hasil { font-size: 0.8rem; font-weight: bold; color: #0f172a; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>SMKN 4 BANJAR</h2>
-    <p>Silakan isi data untuk membuat QR Code absensi siswa.</p>
-
-    <div class="input-group">
-        <label for="nama">Nama Lengkap</label>
-        <input type="text" id="nama" placeholder="Contoh: Budi Santoso">
-    </div>
-
-    <div class="input-group">
-        <label for="nis">NIS / NISN</label>
-        <input type="text" id="nis" placeholder="Contoh: 12345678">
-    </div>
-
-    <div class="input-group">
-        <label for="kelas">Kelas</label>
-        <input type="text" id="kelas" placeholder="Contoh: XII TJKT 1">
-    </div>
-
-    <button onclick="generateQR()">Buat Kode QR</button>
-
-    <div id="qrcode-container">
-        <div id="qrcode"></div>
-        <p class="info-hasil">Tunjukkan kode ini ke petugas/scanner</p>
-        <button onclick="window.print()" style="background: #64748b; font-size: 0.8rem; padding: 0.5rem;">Cetak / Simpan PDF</button>
-    </div>
+<div class="header">
+    <h2>Scanner absensi siswa</h2>
+    <p>Arahkan kamera ke QR Code Siswa</p>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<div id="reader"></div>
+
+<div id="result" class="result-card">
+    <h3>Siswa Terdeteksi!</h3>
+    <div class="data-row"><span class="label">Nama:</span> <span id="res-nama">-</span></div>
+    <div class="data-row"><span class="label">NIS:</span> <span id="res-nis">-</span></div>
+    <div class="data-row"><span class="label">Kelas:</span> <span id="res-kelas">-</span></div>
+    <div class="data-row"><span class="label">Waktu Scan:</span> <span id="res-waktu">-</span></div>
+    <div class="status-badge">Berhasil Diverifikasi</div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
 
 <script>
-    function generateQR() {
-        const nama = document.getElementById('nama').value;
-        const nis = document.getElementById('nis').value;
-        const kelas = document.getElementById('kelas').value;
-        const qrContainer = document.getElementById('qrcode-container');
-        const qrDiv = document.getElementById('qrcode');
+    function onScanSuccess(decodedText, decodedResult) {
+        // Suara beep saat berhasil scan (opsional)
+        const audio = new Audio('https://www.soundjay.com/buttons/beep-07.mp3');
+        audio.play();
 
-        if (nama === "" || nis === "" || kelas === "") {
-            alert("Harap isi semua data terlebih dahulu!");
-            return;
+        // Data dari QR tadi kan formatnya: ABSENSI_MASUK|Nama|NIS|Kelas|Waktu
+        const dataArray = decodedText.split('|');
+
+        if(dataArray[0] === "ABSENSI_MASUK") {
+            document.getElementById('result').style.display = "block";
+            document.getElementById('res-nama').innerText = dataArray[1];
+            document.getElementById('res-nis').innerText = dataArray[2];
+            document.getElementById('res-kelas').innerText = dataArray[3];
+            document.getElementById('res-waktu').innerText = new Date().toLocaleTimeString();
+
+            // Berhenti scan sebentar agar tidak double scan
+            html5QrcodeScanner.clear();
+            
+            // Tombol untuk scan ulang
+            setTimeout(() => {
+                location.reload(); 
+            }, 5000); // Otomatis refresh setelah 5 detik untuk scan siswa berikutnya
+        } else {
+            alert("QR Code Tidak Valid!");
         }
-
-        // Hapus QR Code sebelumnya jika ada
-        qrDiv.innerHTML = "";
-
-        // Format data yang akan masuk ke QR Code (misal JSON)
-        const data = `ABSENSI_MASUK|${nama}|${nis}|${kelas}|${new Date().toLocaleString()}`;
-
-        // Generate QR Code
-        new QRCode(qrDiv, {
-            text: data,
-            width: 180,
-            height: 180,
-            colorDark : "#1e293b",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
-        // Tampilkan container QR
-        qrContainer.style.display = "block";
     }
+
+    function onScanFailure(error) {
+        // Abaikan error saat mencari QR
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", 
+        { fps: 10, qrbox: {width: 250, height: 250} },
+        /* verbose= */ false
+    );
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 </script>
 
 </body>
